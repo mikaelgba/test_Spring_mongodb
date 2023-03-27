@@ -1,15 +1,18 @@
 package com.br.calcme.services;
 
 import com.br.calcme.DTO.UserDTO;
+import com.br.calcme.VO.UserVO;
+import com.br.calcme.models.User;
+
 import java.util.List;
 
 public interface UserService {
 
-    List<UserDTO> findAll();
+    List<UserVO> findAll();
 
     UserDTO findById(String id);
 
-    UserDTO save(UserDTO userDTO);
+    UserVO save(UserDTO userDTO);
 
     UserDTO update(String id, UserDTO userDTO);
 

@@ -1,6 +1,7 @@
 package com.br.calcme.services.impl;
 
 import com.br.calcme.DTO.UserDTO;
+import com.br.calcme.VO.UserVO;
 import com.br.calcme.exceptions.UserAlreadyExistsException;
 import com.br.calcme.exceptions.UserNotFoundException;
 import com.br.calcme.models.User;
@@ -21,11 +22,9 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
 
     @Override
-    public List<UserDTO> findAll() {
+    public List<UserVO> findAll() {
         List<User> users = userRepository.findAll();
-        return users.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        return users.stream().map(UserVO::new).collect(Collectors.toList());
     }
 
     @Override
@@ -36,7 +35,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO save(UserDTO userDTO) {
+    public UserVO save(UserDTO userDTO) {
         if (userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
             throw new UserAlreadyExistsException("Email already exists");
         }
@@ -44,7 +43,7 @@ public class UserServiceImpl implements UserService {
         user.setCreated(LocalDateTime.now());
         user.setUpdated(LocalDateTime.now());
         User savedUser = userRepository.save(user);
-        return convertToDTO(savedUser);
+        return new UserVO(savedUser);
     }
 
 

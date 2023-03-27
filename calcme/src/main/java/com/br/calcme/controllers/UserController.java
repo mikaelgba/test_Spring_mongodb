@@ -1,6 +1,7 @@
 package com.br.calcme.controllers;
 
 import com.br.calcme.DTO.UserDTO;
+import com.br.calcme.VO.UserVO;
 import com.br.calcme.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,7 +18,7 @@ public class UserController {
     private UserService userService;
 
     @GetMapping
-    public List<UserDTO> findAll() {
+    public List<UserVO> findAll() {
         return userService.findAll();
     }
 
@@ -28,8 +29,8 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserDTO> create(@RequestBody @Validated UserDTO userDTO) {
-        UserDTO savedUserDTO = userService.save(userDTO);
+    public ResponseEntity<UserVO> create(@RequestBody @Validated UserDTO userDTO) {
+        UserVO savedUserDTO = userService.save(userDTO);
         return new ResponseEntity<>(savedUserDTO, HttpStatus.CREATED);
     }
 
