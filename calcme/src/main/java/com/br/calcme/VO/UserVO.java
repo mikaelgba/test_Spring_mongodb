@@ -16,7 +16,9 @@ public class UserVO {
 
     // construtores, getters e setters
 
-
+    public UserVO() {
+        // Construtor padrão sem parâmetros
+    }
     public UserVO(User user) {
         this.id = user.getId();
         this.name = user.getName();

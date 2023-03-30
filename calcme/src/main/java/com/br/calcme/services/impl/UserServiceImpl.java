@@ -7,8 +7,17 @@ import com.br.calcme.exceptions.UserNotFoundException;
 import com.br.calcme.models.User;
 import com.br.calcme.repositories.UserRepository;
 import com.br.calcme.services.UserService;
+import com.br.calcme.utils.filter.UserFilter;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,10 +30,38 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
     @Override
-    public List<UserVO> findAll() {
-        List<User> users = userRepository.findAll();
-        return users.stream().map(UserVO::new).collect(Collectors.toList());
+    public Page<UserVO> findAll(Pageable pageable) {
+        Page<User> userPage = userRepository.findAll(pageable);
+        return userPage.map(user -> new ModelMapper().map(user, UserVO.class));
+    }
+
+    @Override
+    public Page<UserVO> findWithFilters(UserFilter filter, Pageable pageable) {
+        Query query = new Query();
+        if (filter.getName() != null && !filter.getName().isEmpty()) {
+            query.addCriteria(Criteria.where("name").regex(filter.getName(), "i"));
+        }
+        if (filter.getId() != null && !filter.getId().isEmpty()) {
+            query.addCriteria(Criteria.where("id").is(filter.getId()));
+        }
+        if (filter.getEmail() != null && !filter.getEmail().isEmpty()) {
+            query.addCriteria(Criteria.where("email").regex(filter.getEmail(), "i"));
+        }
+        if (filter.getPhone() != null && !filter.getPhone().isEmpty()) {
+            query.addCriteria(Criteria.where("phone").regex(filter.getPhone(), "i"));
+        }
+        query.with(Sort.by(Sort.Direction.ASC, "name")); // critério de ordenação por nome em ordem crescente
+        long count = mongoTemplate.count(query, User.class);
+        query.with(pageable);
+        List<User> users = mongoTemplate.find(query, User.class);
+        List<UserVO> userVOs = users.stream()
+                .map(user -> new ModelMapper().map(user, UserVO.class))
+                .collect(Collectors.toList());
+        return new PageImpl<>(userVOs, pageable, count);
     }
 
     @Override
